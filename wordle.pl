@@ -9,7 +9,7 @@ sub read_file_lines_to_hash
     open(my $file, "<", $_[0]) or die "Failed to open file: $_[0]\n";
     my @contents = <$file>;
     chomp(@contents);
-    return map { $_ => $_ } @contents; # fill the hash with the key and value being a given word
+    return map { $_ => 0 } @contents; # fill the hash with the key being the word (value is irrelevant)
 }
 
 my %answer_words = read_file_lines_to_hash("./wordle-La.txt");
@@ -21,7 +21,7 @@ my @keyboard_state_colours = ("dark white", "black", "bold white"); # colours to
 my $max_guesses = 6;
 my $current_guess_num = 1;
 
-my $answer = $answer_words{(keys %answer_words)[rand keys %answer_words]}; # pick a random word from the potential answer words
+my $answer = (keys(%answer_words))[rand(keys(%answer_words))]; # pick a random word from the potential answer words
 my $answer_len = length($answer);
 
 
@@ -75,16 +75,8 @@ while ($current_guess_num <= $max_guesses)
 
     if ($guess eq "q")
     {
-        cldown(); # clear keyboard from screen
-        exit(1);
-    }
-
-    if (length($guess) != $answer_len)
-    {
-        # if guess doesn't have the right amount of letters, don't bother with any further checks and don't take away a guess
-        loadpos();
-        print("$guess - ", colored("Guess must have $answer_len letters\n", "red"));
-        next;
+        # user wants to quit, so quit
+        last;
     }
 
     if ($guess eq $answer)
@@ -94,6 +86,14 @@ while ($current_guess_num <= $max_guesses)
         print(colored("$guess\n", "green"));
         print("You guessed the word\n");
         last;
+    }
+
+    if (length($guess) != $answer_len)
+    {
+        # if guess doesn't have the right amount of letters, don't bother with any further checks and don't take away a guess
+        loadpos();
+        print("$guess - ", colored("Guess must have $answer_len letters\n", "red"));
+        next;
     }
 
     if (!exists($answer_words{$guess}) && !exists($guessable_words{$guess}))
